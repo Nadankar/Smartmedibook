@@ -1,0 +1,142 @@
+[
+  {
+    "id": 1,
+    "name": "Dr. Aarav Mehta",
+    "specialization": "Cardiologist",
+    "experience": "12 years",
+    "image": "https://randomuser.me/api/portraits/men/32.jpg"
+  },
+  {
+    "id": 2,
+    "name": "Dr. Priya Sharma",
+    "specialization": "Dermatologist",
+    "experience": "8 years",
+    "image": "https://randomuser.me/api/portraits/women/45.jpg"
+  },
+  {
+    "id": 3,
+    "name": "Dr. Rohan Patel", 
+    "specialization": "Neurologist",
+    "experience": "10 years", 
+    "image": "https://randomuser.me/api/portraits/men/50.jpg"
+  },
+  {
+    "id": 4,
+    "name": "Dr. Sneha Nair",
+    "specialization": "Pediatrician",
+    "experience": "7 years",
+    "image": "https://randomuser.me/api/portraits/women/68.jpg"
+  },
+  {
+    "id": 5,
+    "name": "Dr. Karan Joshi",
+    "specialization": "Orthopedic Surgeon",
+    "experience": "15 years",
+    "image": "https://randomuser.me/api/portraits/men/72.jpg"
+  },
+  {
+    "id": 6,
+    "name": "Dr. Nisha Desai",
+    "specialization": "Gynecologist",
+    "experience": "9 years",
+    "image": "https://randomuser.me/api/portraits/women/60.jpg"
+  },
+  {
+    "id": 7,
+    "name": "Dr. Manav Singh",
+    "specialization": "Psychiatrist",
+    "experience": "11 years",
+    "image": "https://randomuser.me/api/portraits/men/44.jpg"
+  },
+  {
+    "id": 8,
+    "name": "Dr. Ishita Kapoor",
+    "specialization": "Dentist",
+    "experience": "6 years",
+    "image": "https://randomuser.me/api/portraits/women/22.jpg"
+  },
+  {
+    "id": 9,
+    "name": "Dr. Rajesh Khanna",
+    "specialization": "General Physician",
+    "experience": "18 years",
+    "image": "https://randomuser.me/api/portraits/men/35.jpg"
+  },
+  {
+    "id": 10,
+    "name": "Dr. Aditi Verma",
+    "specialization": "Endocrinologist",
+    "experience": "13 years",
+    "image": "https://randomuser.me/api/portraits/women/12.jpg"
+  },
+  {
+    "id": 11,
+    "name": "Dr. Sidharth Rao",
+    "specialization": "Oncologist",
+    "experience": "14 years",
+    "image": "https://randomuser.me/api/portraits/men/63.jpg"
+  },
+  {
+    "id": 12,
+    "name": "Dr. Kavya Menon",
+    "specialization": "ENT Specialist",
+    "experience": "9 years",
+    "image": "https://randomuser.me/api/portraits/women/52.jpg"
+  },
+  {
+    "id": 13,
+    "name": "Dr. Neeraj Gupta",
+    "specialization": "Urologist",
+    "experience": "10 years",
+    "image": "https://randomuser.me/api/portraits/men/28.jpg"
+  },
+  {
+    "id": 14,
+    "name": "Dr. Riya Thakur",
+    "specialization": "Radiologist",
+    "experience": "8 years",
+    "image": "https://randomuser.me/api/portraits/women/80.jpg"
+  },
+  {
+    "id": 15,
+    "name": "Dr. Arjun Bhatia",
+    "specialization": "Anesthesiologist",
+    "experience": "16 years",
+    "image": "https://randomuser.me/api/portraits/men/85.jpg"
+  },
+  {
+    "id": 16,
+    "name": "Dr. Meera Chawla",
+    "specialization": "Pathologist",
+    "experience": "7 years",
+    "image": "https://randomuser.me/api/portraits/women/75.jpg"
+  },
+  {
+    "id": 17,
+    "name": "Dr. Vikas Tandon",
+    "specialization": "Ophthalmologist",
+    "experience": "12 years",
+    "image": "https://randomuser.me/api/portraits/men/49.jpg"
+  },
+  {
+    "id": 18,
+    "name": "Dr. Sanjana Pillai",
+    "specialization": "Physiotherapist",
+    "experience": "6 years",
+    "image": "https://randomuser.me/api/portraits/women/15.jpg"
+  },
+  {
+    "id": 19,
+    "name": "Dr. Harshad Goyal",
+    "specialization": "Pulmonologist",
+    "experience": "11 years",
+    "image": "https://randomuser.me/api/portraits/men/38.jpg"
+  },
+  {
+    "id": 20,
+    "name": "Dr. Neha Bansal",
+    "specialization": "Nutritionist",
+    "experience": "5 years",
+    "image": "https://randomuser.me/api/portraits/women/39.jpg"
+  }
+]

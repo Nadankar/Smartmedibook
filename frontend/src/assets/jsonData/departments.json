@@ -1,0 +1,117 @@
+[
+  {
+    "id": "1",
+    "title": "Cardiology",
+    "note": "Heart-related diagnosis and advanced cardiac care",
+    "img": "https://images.pexels.com/photos/6129507/pexels-photo-6129507.jpeg"
+  },
+  {
+    "id": "2",
+    "title": "Neurology",
+    "note": "Brain, spine, and nervous system treatments",
+    "img": "https://images.pexels.com/photos/8460371/pexels-photo-8460371.jpeg"
+  },
+  {
+    "id": "3",
+    "title": "General Surgery",
+    "note": "Surgical procedures with expert surgeons",
+    "img": "https://images.pexels.com/photos/8460157/pexels-photo-8460157.jpeg"
+  },
+  {
+    "id": "4",
+    "title": "OPD Services",
+    "note": "Outpatient consultations and routine checkups",
+    "img": "https://images.pexels.com/photos/7089629/pexels-photo-7089629.jpeg"
+  },
+  {
+    "id": "5",
+    "title": "Pediatrics",
+    "note": "Healthcare services for infants and children",
+    "img": "https://images.pexels.com/photos/8460327/pexels-photo-8460327.jpeg"
+  },
+  {
+    "id": "6",
+    "title": "Gynecology",
+    "note": "Women’s health, pregnancy, and maternity care",
+    "img": "https://images.pexels.com/photos/7088498/pexels-photo-7088498.jpeg"
+  },
+  {
+    "id": "7",
+    "title": "Nephrology",
+    "note": "Kidney care and dialysis services",
+    "img": "https://images.pexels.com/photos/8460434/pexels-photo-8460434.jpeg"
+  },
+  {
+    "id": "8",
+    "title": "Gastroenterology",
+    "note": "Digestive system diagnosis and treatment",
+    "img": "https://images.pexels.com/photos/8460364/pexels-photo-8460364.jpeg"
+  },
+  {
+    "id": "9",
+    "title": "Pulmonology",
+    "note": "Lung and respiratory system care",
+    "img": "https://images.pexels.com/photos/8460339/pexels-photo-8460339.jpeg"
+  },
+  {
+    "id": "10",
+    "title": "Dermatology",
+    "note": "Skin, hair, and nail treatments",
+    "img": "https://images.pexels.com/photos/7446995/pexels-photo-7446995.jpeg"
+  },
+  {
+    "id": "11",
+    "title": "ENT",
+    "note": "Ear, nose, and throat treatments",
+    "img": "https://images.pexels.com/photos/8460322/pexels-photo-8460322.jpeg"
+  },
+   {
+    "id": "12",
+    "title": "Ophthalmology",
+    "note": "Eye care, vision testing, and surgery",
+    "img": "https://images.pexels.com/photos/8460151/pexels-photo-8460151.jpeg"
+  },
+  {
+    "id": "13",
+    "title": "Dental",
+    "note": "Complete oral and dental care services",
+    "img": "https://images.pexels.com/photos/6812573/pexels-photo-6812573.jpeg"
+  },
+  {
+    "id": "14",
+    "title": "Radiology",
+    "note": "X-ray, CT scan, MRI, and imaging services",
+    "img": "https://images.pexels.com/photos/8460334/pexels-photo-8460334.jpeg"
+  },
+  {
+    "id": "15",
+    "title": "Pathology",
+    "note": "Blood tests and lab diagnostics",
+    "img": "https://images.pexels.com/photos/3825527/pexels-photo-3825527.jpeg"
+  },
+  {
+    "id": "16",
+    "title": "Blood Bank",
+    "note": "Safe blood storage and transfusion services",
+    "img": "https://images.pexels.com/photos/8460355/pexels-photo-8460355.jpeg"
+  },
+  {
+    "id": "17",
+    "title": "Physiotherapy",
+    "note": "Physical rehabilitation and recovery care",
+    "img": "https://images.pexels.com/photos/6111607/pexels-photo-6111607.jpeg"
+  },
+  {
+    "id": "18",
+    "title": "Nutrition",
+    "note": "Diet planning and nutritional guidance",
+    "img": "https://images.pexels.com/photos/1640777/pexels-photo-1640777.jpeg"
+  },
+  {
+    "id": "19",
+    "title": "Speech Therapy",
+    "note": "Speech and communication improvement therapy",
+    "img": "https://images.pexels.com/photos/8460350/pexels-photo-8460350.jpeg"
+  }
+ 
+]

@@ -1,0 +1,26 @@
+[
+  {
+    "id": 1,
+    "message": "The appointment booking process was smooth and very convenient. The AI assistant helped me instantly.",
+    "name": "Anjali Sharma",
+    "img": "https://images.pexels.com/photos/774909/pexels-photo-774909.jpeg"
+  },
+  { 
+    "id": 2,
+    "message": "Doctors were very professional and caring. I didn’t have to wait long for my appointment.",
+    "name": "Rahul Mehta",
+    "img": "https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg"
+  },
+  {
+    "id": 3,
+    "message": "Managing my medical records online made everything so easy. Highly recommended platform.",
+    "name": "Sneha Patil",
+    "img": "https://images.pexels.com/photos/415829/pexels-photo-415829.jpeg"
+  },
+  {
+    "id": 4,
+    "message": "The AI chatbot saved me time by booking my appointment in minutes. Very helpful service.",
+    "name": "Amit Verma",
+    "img": "https://images.pexels.com/photos/614810/pexels-photo-614810.jpeg"
+  }
+]

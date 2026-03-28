@@ -1,0 +1,42 @@
+[
+  {
+    "id": 1,
+    "question": "How do I book an appointment?",
+    "answer": "You can book an appointment online through our website or by using our AI voice assistant, available 24/7."
+  },
+  {
+    "id": 2,
+    "question": "Can I book an appointment using voice?",
+    "answer": "Yes, our AI voice assistant allows you to book appointments by voice anytime, without waiting."
+  },
+  {
+    "id": 3,
+    "question": "Is my medical data secure?",
+    "answer": "Yes, we use secure systems and encryption to keep your personal and medical data private and safe."
+  },
+  {
+    "id": 4,
+    "question": "Can I reschedule or cancel my appointment?",
+    "answer": "Appointments can be easily rescheduled or cancelled through your account or via the AI assistant."
+  },
+  {
+    "id": 5,
+    "question": "Do you provide online consultations?",
+    "answer": "Yes, online video consultations are available for selected doctors and departments."
+  },
+  {
+    "id": 6,
+    "question": "What should I bring for my first visit?",
+    "answer": "Please bring a valid ID, previous medical reports, and insurance details if applicable."
+  },
+  {
+    "id": 7,
+    "question": "Do you accept health insurance?",
+    "answer": "We accept most major health insurance plans. Please check with our support team for confirmation."
+  },
+  {
+    "id": 8,
+    "question": "What are your working hours?",
+    "answer": "Our hospital operates from 9 AM to 9 PM. Online and voice booking services are available 24/7."
+  }
+]

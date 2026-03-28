@@ -1,0 +1,38 @@
+[
+  {
+    "id": "1",
+    "title": "Doctor Consultation",
+    "img": "https://images.pexels.com/photos/6129507/pexels-photo-6129507.jpeg",
+    "span": "row-span-2"
+  },
+  {
+    "id": "2",
+    "title": "Hospital Reception",
+    "img": "https://images.pexels.com/photos/7089629/pexels-photo-7089629.jpeg",
+    "span": ""
+  },
+  {
+    "id": "3",
+    "title": "Operation Theatre",
+    "img": "https://images.pexels.com/photos/8460157/pexels-photo-8460157.jpeg",
+    "span": "row-span-2"
+  },
+  {
+    "id": "4",
+    "title": "Patient Care",
+    "img": "https://images.pexels.com/photos/8460327/pexels-photo-8460327.jpeg",
+    "span": ""
+  },
+  {
+    "id": "5",
+    "title": "Medical Diagnostics",
+    "img": "https://images.pexels.com/photos/8460334/pexels-photo-8460334.jpeg",
+    "span": "col-span-2"
+  },
+  {
+    "id": "6",
+    "title": "Physiotherapy Session",
+    "img": "https://images.pexels.com/photos/6111607/pexels-photo-6111607.jpeg",
+    "span": ""
+  }
+]

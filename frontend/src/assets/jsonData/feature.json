@@ -1,0 +1,32 @@
+[
+  {
+    "id": "1",
+    "feature": "Online Doctor Appointment Booking",
+    "img": "https://cdn-icons-png.flaticon.com/512/2921/2921222.png"
+  },
+  {
+    "id": "2",
+    "feature": "AI Chatbot for Appointment Scheduling",
+    "img": "https://cdn-icons-png.flaticon.com/512/4712/4712109.png"
+  },
+  {
+    "id": "3",
+    "feature": "Digital Medical Records",
+    "img": "https://cdn-icons-png.flaticon.com/512/942/942748.png"
+  },
+  {
+    "id": "4",
+    "feature": "Doctor Availability & Specialization",
+    "img": "https://cdn-icons-png.flaticon.com/512/3774/3774299.png"
+  },
+  {
+    "id": "5",
+    "feature": "Appointment Reminders",
+    "img": "https://cdn-icons-png.flaticon.com/512/1827/1827349.png"
+  },
+  {
+    "id": "6",
+    "feature": "Secure & Private Data",
+    "img": "https://cdn-icons-png.flaticon.com/512/3064/3064197.png"
+  }
+]
