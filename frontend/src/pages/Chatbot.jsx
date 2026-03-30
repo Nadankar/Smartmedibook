@@ -169,8 +169,8 @@ function Chatbot() {
     <div className="min-h-screen flex flex-col bg-gradient-to-br from-black via-[#1b0f2e] to-black ">
       <Navbar />
 
-      <div className="flex flex-1 relative justify-center items-center px-4">
-        <div className="absolute left-4 top-24">
+      <div className="flex flex-1 relative justify-center items-center px-4 ">
+        <div className="absolute left-4 top-2 z-90">
           <Sidebar />
         </div>
 

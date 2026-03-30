@@ -7,10 +7,9 @@ function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
 
   return (
-    <nav className="py-8  px-3 sm:px-5">
+    <nav className="py-7 px-3 sm:px-5">
       {/* MAIN NAVBAR */}
-      <div className="max-w-7xl mx-auto bg-base-100 shadow-lg rounded-full flex justify-between items-center px-4 sm:px-6 md:px-10 md:py-4 sticky">
-        
+      <div className="max-w-7xl mx-auto bg-base-100 shadow-lg rounded-full flex justify-between items-center px-4 sm:px-6 md:px-10 md:py-4 sticky top-0 z-50">
         {/* LEFT SIDE */}
         <div className="flex items-center gap-2">
           <img
@@ -24,8 +23,7 @@ function Navbar() {
         </div>
 
         {/* RIGHT SIDE */}
-        <div className="flex items-center gap-4 ">
-          
+        <div className="flex items-center gap-4">
           {/* Desktop Links */}
           <div className="hidden md:flex gap-5 font-medium text-base">
             <Link to="/" className="hover:text-pink-600">Home</Link>
@@ -33,7 +31,7 @@ function Navbar() {
             <Link to="/Service" className="hover:text-pink-600">Services</Link>
           </div>
 
-          {/* Buttons */}
+          {/* Desktop Buttons */}
           <div className="hidden sm:flex items-center gap-3">
             <Link
               to="/login"
@@ -41,18 +39,16 @@ function Navbar() {
             >
               Login
             </Link>
-
             <Link
               to="/chatbot"
               className="btn text-white bg-gradient-to-r from-violet-500 via-pink-500 to-violet-500 border-0 hover:bg-[#132440] hover:scale-105 px-4 sm:px-6 py-2 sm:py-3 rounded-full font-semibold text-sm sm:text-base"
             >
               Book Appointment
             </Link>
-
             <Notification />
           </div>
 
-          {/* Hamburger Menu for Mobile */}
+          {/* Hamburger */}
           <button
             className="md:hidden flex items-center justify-center text-gray-700 hover:text-pink-600 focus:outline-none"
             onClick={() => setMenuOpen(!menuOpen)}
@@ -65,47 +61,25 @@ function Navbar() {
               xmlns="http://www.w3.org/2000/svg"
             >
               {menuOpen ? (
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M6 18L18 6M6 6l12 12"
-                />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
               ) : (
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M4 6h16M4 12h16M4 18h16"
-                />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
               )}
             </svg>
           </button>
         </div>
       </div>
 
-      {/* MOBILE SIDEBAR / MENU */}
+      {/* MOBILE SIDEBAR */}
       {menuOpen && (
-        <div className="md:hidden bg-base-100 px-4 pb-4 space-y-3 shadow-lg">
-          {/* Links */}
-          <Link to="/" className="block font-medium hover:text-pink-600">Home</Link>
-          <Link to="/About" className="block font-medium hover:text-pink-600">About Us</Link>
-          <Link to="/Service" className="block font-medium hover:text-pink-600">Services</Link>
+        <div className="md:hidden absolute top-20 left-0 w-full bg-base-100 shadow-lg z-96 px-4 pb-4 space-y-3">
+          <Link to="/" className="block font-medium hover:text-pink-600" onClick={() => setMenuOpen(false)}>Home</Link>
+          <Link to="/About" className="block font-medium hover:text-pink-600" onClick={() => setMenuOpen(false)}>About Us</Link>
+          <Link to="/Service" className="block font-medium hover:text-pink-600" onClick={() => setMenuOpen(false)}>Services</Link>
 
-          {/* Buttons */}
-          <Link
-            to="/login"
-            className="block text-center bg-[#132440] text-white hover:bg-pink-600 rounded-full py-2 font-medium"
-          >
-            Login
-          </Link>
+          <Link to="/login" className="block text-center bg-[#132440] text-white hover:bg-pink-600 rounded-full py-2 font-medium" onClick={() => setMenuOpen(false)}>Login</Link>
 
-          <Link
-            to="/chatbot"
-            className="block text-center bg-gradient-to-r from-violet-500 via-pink-500 to-violet-500 text-white hover:bg-[#132440] rounded-full py-2 font-semibold"
-          >
-            Book Appointment
-          </Link>
+          <Link to="/chatbot" className="block text-center bg-gradient-to-r from-violet-500 via-pink-500 to-violet-500 text-white hover:bg-[#132440] rounded-full py-2 font-semibold" onClick={() => setMenuOpen(false)}>Book Appointment</Link>
 
           <div className="flex justify-center">
             <Notification />
