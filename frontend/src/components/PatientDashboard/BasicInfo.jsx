@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:3000";
 
 function BasicInfo() {
 
@@ -13,7 +14,7 @@ function BasicInfo() {
                 const user = JSON.parse(localStorage.getItem("user"));
 
                 const response = await fetch(
-                    `http://localhost:3000/api/patients/${user.id}`,
+                    `${BACKEND_URL}/api/patients/${user.id}`,
                     {
                         method: "GET",
                         headers: {

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react'
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:3000";
 
 function BasicInfoCard() {
 
@@ -11,7 +12,7 @@ function BasicInfoCard() {
         const token = localStorage.getItem("token");
         const user = JSON.parse(localStorage.getItem("user"));
 
-        const response = await fetch(`http://localhost:3000/api/doctors/${user.id}`, {
+        const response = await fetch(`${BACKEND_URL}/api/doctors/${user.id}`, {
           method: "GET",
           headers: {
             "Content-Type": "application/json",

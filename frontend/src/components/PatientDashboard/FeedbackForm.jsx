@@ -1,6 +1,7 @@
 import axios from "axios";
 import React from "react";
 import { useState } from "react";
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:3000";
 
 const FeedbackForm = () => {
   const [formData, setFormData] = useState({
@@ -33,7 +34,7 @@ const FeedbackForm = () => {
       console.log("Token parts:", parts.length);
     }
 
-      const response = await axios.post('http://localhost:3000/api/reviews/', formData, {
+      const response = await axios.post(`${BACKEND_URL}/api/reviews/`, formData, {
         headers: {
           Authorization: `Bearer ${token}`
         }

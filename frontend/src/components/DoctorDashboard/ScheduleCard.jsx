@@ -1,6 +1,7 @@
 
 import React, { useEffect, useMemo, useState } from "react";
 import { FaClock } from "react-icons/fa6";
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:3000";
 
 function ScheduleCard() {
   const [timeslot, setTimeslot] = useState([]);
@@ -20,7 +21,7 @@ function ScheduleCard() {
         }
 
         const response = await fetch(
-          `http://localhost:3000/api/timeslots/doctor/${user.id}`,
+          `${BACKEND_URL}/api/timeslots/doctor/${user.id}`,
           {
             method: "GET",
             headers: {

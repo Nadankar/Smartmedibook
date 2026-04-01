@@ -4,6 +4,9 @@ import { Link } from 'react-router-dom'
 import { useNavigate } from "react-router-dom";
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:3000";
+
+
 
 function Loginpage() {
     const navigate = useNavigate();
@@ -23,7 +26,7 @@ function Loginpage() {
         e.preventDefault();
         try {
             const response = await axios.post(
-                "http://localhost:3000/api/auth/login",
+                `${BACKEND_URL}/api/auth/login`,
                 formData
             );
 

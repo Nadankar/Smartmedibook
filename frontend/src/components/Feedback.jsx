@@ -1,6 +1,7 @@
 
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:3000";
 
 function Feedback() {
   const [reviews, setReviews] = useState([]);
@@ -11,10 +12,9 @@ function Feedback() {
     async function fetchReviews() {
       try {
         setLoading(true);
-        const token = localStorage.getItem('token');
- 
-
-        const res = await axios.get('http://localhost:3000/api/reviews', {
+        const token = localStorage.getItem('token');      
+       
+       const res = await axios.get(`${BACKEND_URL}/api/reviews`,  {
           headers: {
             Authorization: `Bearer ${token}`,
           },

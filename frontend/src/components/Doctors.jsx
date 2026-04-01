@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import axios from 'axios'
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:3000";
 
 function Doctors() {
   const [doctors, setDoctors] = useState([]);
@@ -11,7 +12,7 @@ function Doctors() {
     async function fetchDoctors() {
       try {
         setLoading(true);
-        const response = await axios.get('http://localhost:3000/api/doctors');
+        const response = await axios.get(`${BACKEND_URL}/api/doctors`);
         setDoctors(response.data.data);
         setLoading(false);
       } catch (error) {

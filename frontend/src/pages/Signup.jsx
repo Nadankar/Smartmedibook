@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:3000";
 
 function Signup() {
 
@@ -26,10 +27,7 @@ function Signup() {
     const handleSignup = async (e) => {
         e.preventDefault();
         try {
-            const response = await axios.post(
-                "http://localhost:3000/api/auth/signup",
-                formData
-            );
+            const response = await axios.post(`${BACKEND_URL}/api/auth/signup`, formData);
 
             setSuccess("User Registered Successfully!");
             setError("");
