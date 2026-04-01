@@ -273,9 +273,8 @@ function Chatbot() {
         </div>
       </div>
 
-       <Footer />
+    
     </div>
-   
      </>
   );
 }
