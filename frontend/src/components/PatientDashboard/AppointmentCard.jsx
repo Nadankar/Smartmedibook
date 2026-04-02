@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
+
+const API_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:3000";
 
 function AppointmentCard() {
   const [appointments, setAppointments] = useState([]);
