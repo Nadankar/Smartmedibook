@@ -110,7 +110,7 @@ function Chatbot() {
     }
 
     try {
-      const response = await axios.post(`${AI_URL}/chat`, payload);
+      const response = await axios.post(`${AI_URL}/chatbot`, payload);
 
       const newSessionId = response?.data?.session_id;
       if (newSessionId) {
