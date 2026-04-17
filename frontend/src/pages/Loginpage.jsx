@@ -13,7 +13,7 @@ function Loginpage() {
 
     const [formData, setFormData] = useState({
         password: '',
-        email: ''
+        email: '' 
     });
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
@@ -39,7 +39,7 @@ function Loginpage() {
                 JSON.stringify({
                     id: response.data.data.id,
                     email: response.data.data.email,
-                    role: response.data.data.role
+                    role: response.data.data.role 
                 })
             );
 

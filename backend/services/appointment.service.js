@@ -138,8 +138,6 @@ const emitAppointmentUpdate = (appointment, type = "updated", extra = {}) => {
   }
 };
 
-
-
 class AppointmentService {
   static async createAppointment(appointmentData) {
     const session = await mongoose.startSession();
@@ -234,7 +232,6 @@ class AppointmentService {
             start_time: time,
           },
           {
-            is_availability: true,
             status: "available",
             appointment_id: null,
             is_emergency: false,
@@ -251,7 +248,6 @@ class AppointmentService {
 
       if (
         slot &&
-        slot.is_availability === false &&
         slot.status === "booked" &&
         (!displacedAppointment ||
           String(slot.appointment_id) !== String(displacedAppointment._id))
@@ -295,7 +291,6 @@ class AppointmentService {
           slot_date: normalizedDate,
           start_time: time,
           end_time: guessEndTime(time),
-          is_availability: false,
           is_emergency: finalUrgencyLabel === "emergency",
           status: "booked",
           appointment_id: appointment[0]._id,
@@ -361,27 +356,60 @@ class AppointmentService {
   }
 
   static async getAppointmentsByDoctorUserId(doctorUserId) {
+    console.log(`📋 getAppointmentsByDoctorUserId: Looking for doctor with user_id: ${doctorUserId}`);
+    
     const doctor = await Doctor.findOne({ user_id: doctorUserId });
-    if (!doctor) return [];
+    if (!doctor) {
+      console.log(`❌ Doctor not found for user_id: ${doctorUserId}`);
+      return [];
+    }
+    
+    console.log(`✅ Found doctor: ${doctor.name} (${doctor._id})`);
 
-    return await Appointment.find({
+    const appointments = await Appointment.find({
       doctor_id: doctor._id,
       status: { $nin: ["rescheduled_required"] },
     })
       .populate("patient_id")
       .sort({ date: 1, time: 1 });
+    
+    console.log(`📋 Found ${appointments.length} appointments for doctor`);
+    return appointments;
   }
 
   static async getAppointmentsByPatientUserId(patientUserId) {
-    const patient = await Patient.findOne({ user_id: patientUserId });
-    if (!patient) return [];
+    console.log(`📋 getAppointmentsByPatientUserId: Looking for patient with user_id: ${patientUserId}`);
+    
+    // First try to find patient by user_id
+    let patient = await Patient.findOne({ user_id: patientUserId });
+    
+    // If not found, try to find by _id (in case patient_id was passed)
+    if (!patient && mongoose.Types.ObjectId.isValid(patientUserId)) {
+      console.log(`   Trying to find patient by _id: ${patientUserId}`);
+      patient = await Patient.findById(patientUserId);
+    }
+    
+    if (!patient) {
+      console.log(`❌ Patient not found for user_id: ${patientUserId}`);
+      return [];
+    }
+    
+    console.log(`✅ Found patient: ${patient.name} (${patient._id})`);
+    console.log(`   Patient user_id: ${patient.user_id}`);
 
-    return await Appointment.find({
+    const appointments = await Appointment.find({
       patient_id: patient._id,
       status: { $nin: ["rescheduled_required"] },
     })
       .populate("doctor_id")
       .sort({ date: 1, time: 1 });
+    
+    console.log(`📋 Found ${appointments.length} appointments for patient`);
+    appointments.forEach((app, idx) => {
+      console.log(`   ${idx + 1}. ${app.date} ${app.time} - ${app.doctor_id?.name} (${app.status})`);
+    });
+    
+    return appointments;
   }
 
   static async getNextPatientByDoctorUserId(doctorUserId) {
@@ -432,10 +460,23 @@ class AppointmentService {
   }
 
   static async findPatientCancellationTarget(patientUserId, filters = {}) {
-    const patient = await Patient.findOne({ user_id: patientUserId });
+    console.log(`🔍 findPatientCancellationTarget called with patientUserId: ${patientUserId}`);
+    console.log(`   Filters:`, filters);
+    
+    // Try to find patient by user_id first, then by _id
+    let patient = await Patient.findOne({ user_id: patientUserId });
+    
+    if (!patient && mongoose.Types.ObjectId.isValid(patientUserId)) {
+      console.log(`   Trying to find patient by _id: ${patientUserId}`);
+      patient = await Patient.findById(patientUserId);
+    }
+    
     if (!patient) {
+      console.log(`❌ Patient not found for ID: ${patientUserId}`);
       throw new Error("Patient not found.");
     }
+    
+    console.log(`✅ Found patient: ${patient.name} (${patient._id})`);
 
     const query = {
       patient_id: patient._id,
@@ -444,10 +485,12 @@ class AppointmentService {
 
     if (filters.date) {
       query.date = normalizeDate(filters.date);
+      console.log(`   Filtering by date: ${query.date}`);
     }
 
     if (filters.time) {
       query.time = filters.time;
+      console.log(`   Filtering by time: ${query.time}`);
     }
 
     let appointments = await Appointment.find(query)
@@ -455,12 +498,22 @@ class AppointmentService {
       .populate("doctor_id")
       .sort({ date: 1, time: 1 });
 
+    console.log(`   Found ${appointments.length} appointments before doctor filter`);
+
     if (filters.doctorName) {
       const searchDoctor = normalizeDoctorText(filters.doctorName);
+      console.log(`   Filtering by doctor name: ${searchDoctor}`);
+      
       appointments = appointments.filter((appointment) => {
         const doctorName = normalizeDoctorText(appointment.doctor_id?.name || "");
-        return doctorName.includes(searchDoctor);
+        const matches = doctorName.includes(searchDoctor);
+        if (matches) {
+          console.log(`      Matched: ${appointment.doctor_id?.name}`);
+        }
+        return matches;
       });
+      
+      console.log(`   Found ${appointments.length} appointments after doctor filter`);
     }
 
     if (!appointments.length) {
@@ -471,11 +524,11 @@ class AppointmentService {
     }
 
     if (appointments.length > 1) {
+      console.log(`   Multiple matches found (${appointments.length}), returning ambiguous response`);
       return {
         success: false,
         ambiguous: true,
-        message:
-          "Multiple matching appointments found. Please provide doctor name, date, or time more precisely.",
+        message: "Multiple matching appointments found. Please provide doctor name, date, or time more precisely.",
         data: appointments.map((appointment) => ({
           _id: appointment._id,
           date: appointment.date,
@@ -488,6 +541,7 @@ class AppointmentService {
       };
     }
 
+    console.log(`   ✅ Single match found: ${appointments[0]._id}`);
     return {
       success: true,
       data: appointments[0],
@@ -495,10 +549,16 @@ class AppointmentService {
   }
 
   static async findDoctorCancellationTarget(doctorUserId, filters = {}) {
+    console.log(`🔍 findDoctorCancellationTarget called with doctorUserId: ${doctorUserId}`);
+    console.log(`   Filters:`, filters);
+    
     const doctor = await Doctor.findOne({ user_id: doctorUserId });
     if (!doctor) {
+      console.log(`❌ Doctor not found for user_id: ${doctorUserId}`);
       throw new Error("Doctor not found.");
     }
+    
+    console.log(`✅ Found doctor: ${doctor.name} (${doctor._id})`);
 
     const query = {
       doctor_id: doctor._id,
@@ -507,10 +567,12 @@ class AppointmentService {
 
     if (filters.date) {
       query.date = normalizeDate(filters.date);
+      console.log(`   Filtering by date: ${query.date}`);
     }
 
     if (filters.time) {
       query.time = filters.time;
+      console.log(`   Filtering by time: ${query.time}`);
     }
 
     let appointments = await Appointment.find(query)
@@ -518,11 +580,22 @@ class AppointmentService {
       .populate("doctor_id")
       .sort({ date: 1, time: 1 });
 
+    console.log(`   Found ${appointments.length} appointments before patient filter`);
+
     if (filters.patientName) {
       const searchName = filters.patientName.trim().toLowerCase();
-      appointments = appointments.filter((appointment) =>
-        (appointment.patient_id?.name || "").toLowerCase().includes(searchName)
-      );
+      console.log(`   Filtering by patient name: ${searchName}`);
+      
+      appointments = appointments.filter((appointment) => {
+        const patientName = (appointment.patient_id?.name || "").toLowerCase();
+        const matches = patientName.includes(searchName);
+        if (matches) {
+          console.log(`      Matched: ${appointment.patient_id?.name}`);
+        }
+        return matches;
+      });
+      
+      console.log(`   Found ${appointments.length} appointments after patient filter`);
     }
 
     if (!appointments.length) {
@@ -533,11 +606,11 @@ class AppointmentService {
     }
 
     if (appointments.length > 1) {
+      console.log(`   Multiple matches found (${appointments.length}), returning ambiguous response`);
       return {
         success: false,
         ambiguous: true,
-        message:
-          "Multiple matching appointments found. Please provide patient name, date, or time more precisely.",
+        message: "Multiple matching appointments found. Please provide patient name, date, or time more precisely.",
         data: appointments.map((appointment) => ({
           _id: appointment._id,
           date: appointment.date,
@@ -550,6 +623,7 @@ class AppointmentService {
       };
     }
 
+    console.log(`   ✅ Single match found: ${appointments[0]._id}`);
     return {
       success: true,
       data: appointments[0],
@@ -597,7 +671,6 @@ class AppointmentService {
           start_time: appointment.time,
         },
         {
-          is_availability: true,
           status: "available",
           appointment_id: null,
           is_emergency: false,
@@ -657,69 +730,181 @@ class AppointmentService {
   }
 
   static async cancelAppointmentByDoctor(appointmentId, doctorUserId, reason) {
-    const session = await mongoose.startSession();
-    session.startTransaction();
-
-    try {
-      const doctor = await Doctor.findOne({ user_id: doctorUserId }).session(
-        session
-      );
-      if (!doctor) throw new Error("Doctor not found.");
-
-      const appointment = await Appointment.findById(appointmentId)
-        .populate("doctor_id")
-        .populate("patient_id")
-        .session(session);
-
-      if (!appointment) throw new Error("Appointment not found.");
-      if (String(appointment.doctor_id._id) !== String(doctor._id)) {
-        throw new Error("You can only cancel your own appointments.");
-      }
-      if (appointment.status === "completed") {
-        throw new Error("Completed appointments cannot be cancelled.");
-      }
-      if (
-        ["cancelled_by_patient", "cancelled_by_doctor"].includes(
-          appointment.status
-        )
-      ) {
-        throw new Error("Appointment is already cancelled.");
-      }
-      if (!reason || !reason.trim()) {
-        throw new Error("Cancellation reason is required.");
-      }
-
-      appointment.status = "cancelled_by_doctor";
-      appointment.cancelReason = reason.trim();
-      appointment.cancelledAt = new Date();
-      await appointment.save({ session });
-
-      await TimeSlot.findOneAndUpdate(
-        {
-          doctor_id: appointment.doctor_id._id,
-          slot_date: appointment.date,
-          start_time: appointment.time,
-        },
-        {
-          is_availability: true,
-          status: "available",
-          appointment_id: null,
-          is_emergency: false,
-        },
-        { returnDocument: "after", session }
-      );
-
-      await session.commitTransaction();
-      session.endSession();
-
-      emitAppointmentUpdate(appointment, "cancelled_by_doctor");
-      return appointment;
-    } catch (error) {
-      await session.abortTransaction();
-      session.endSession();
-      throw error;
-    }
+  console.log("=" * 60);
+  console.log("🚨 cancelAppointmentByDoctor START");
+  console.log(`   appointmentId: ${appointmentId}`);
+  console.log(`   doctorUserId: ${doctorUserId}`);
+  console.log(`   reason: ${reason}`);
+  console.log("=" * 60);
+  
+  // Validate inputs
+  if (!appointmentId) {
+    console.log("❌ No appointmentId provided");
+    throw new Error("Appointment ID is required");
   }
+  
+  if (!doctorUserId) {
+    console.log("❌ No doctorUserId provided");
+    throw new Error("Doctor User ID is required");
+  }
+  
+  if (!reason || !reason.trim()) {
+    console.log("❌ No reason provided");
+    throw new Error("Cancellation reason is required");
+  }
+  
+  const session = await mongoose.startSession();
+  session.startTransaction();
+
+  try {
+    // Step 1: Find the doctor
+    console.log("📞 Looking for doctor with user_id:", doctorUserId);
+    let doctor = await Doctor.findOne({ user_id: doctorUserId }).session(session);
+    
+    // If not found by user_id, try finding by _id
+    if (!doctor && mongoose.Types.ObjectId.isValid(doctorUserId)) {
+      console.log("   Doctor not found by user_id, trying by _id:", doctorUserId);
+      doctor = await Doctor.findById(doctorUserId).session(session);
+    }
+    
+    if (!doctor) {
+      console.log("❌ Doctor not found for ID:", doctorUserId);
+      throw new Error(`Doctor not found. Please ensure you are logged in as a doctor.`);
+    }
+    
+    console.log(`✅ Found doctor: ${doctor.name} (${doctor._id})`);
+    console.log(`   Doctor user_id: ${doctor.user_id}`);
+
+    // Step 2: Find the appointment
+    console.log("📞 Looking for appointment with ID:", appointmentId);
+    
+    // Validate appointment ID format
+    if (!mongoose.Types.ObjectId.isValid(appointmentId)) {
+      console.log("❌ Invalid appointment ID format");
+      throw new Error("Invalid appointment ID format");
+    }
+    
+    const appointment = await Appointment.findById(appointmentId)
+      .populate("doctor_id")
+      .populate("patient_id")
+      .session(session);
+
+    if (!appointment) {
+      console.log("❌ Appointment not found for ID:", appointmentId);
+      throw new Error(`Appointment not found with ID: ${appointmentId}`);
+    }
+    
+    console.log(`✅ Found appointment:`);
+    console.log(`   Patient: ${appointment.patient_id?.name || 'Unknown'}`);
+    console.log(`   Doctor: ${appointment.doctor_id?.name || 'Unknown'}`);
+    console.log(`   Date: ${appointment.date}`);
+    console.log(`   Time: ${appointment.time}`);
+    console.log(`   Status: ${appointment.status}`);
+    console.log(`   Appointment Doctor ID: ${appointment.doctor_id?._id}`);
+    console.log(`   Current Doctor ID: ${doctor._id}`);
+
+    // Step 3: Verify doctor owns this appointment
+    const appointmentDoctorId = appointment.doctor_id?._id.toString();
+    const currentDoctorId = doctor._id.toString();
+    
+    console.log(`   Comparing: ${appointmentDoctorId} === ${currentDoctorId}`);
+    
+    if (appointmentDoctorId !== currentDoctorId) {
+      console.log("❌ Doctor does not own this appointment");
+      throw new Error("You can only cancel your own appointments.");
+    }
+    console.log("✅ Doctor verified as owner");
+
+    // Step 4: Check appointment status
+    if (appointment.status === "completed") {
+      console.log("❌ Appointment already completed");
+      throw new Error("Completed appointments cannot be cancelled.");
+    }
+    
+    if (["cancelled_by_patient", "cancelled_by_doctor"].includes(appointment.status)) {
+      console.log(`❌ Appointment already cancelled (status: ${appointment.status})`);
+      throw new Error("Appointment is already cancelled.");
+    }
+    
+    console.log("✅ Appointment status is valid for cancellation");
+
+    // Step 5: Update appointment
+    console.log("📝 Updating appointment status...");
+    appointment.status = "cancelled_by_doctor";
+    appointment.cancelReason = reason.trim();
+    appointment.cancelledAt = new Date();
+    await appointment.save({ session });
+    console.log("✅ Appointment updated");
+
+    // Step 6: Update timeslot
+    console.log("📝 Updating timeslot...");
+    const slotDate = appointment.date;
+    const slotTime = appointment.time;
+    
+    console.log(`   Looking for timeslot with:`);
+    console.log(`   doctor_id: ${appointment.doctor_id._id}`);
+    console.log(`   slot_date: ${slotDate}`);
+    console.log(`   start_time: ${slotTime}`);
+    
+    const timeslotUpdate = await TimeSlot.findOneAndUpdate(
+      {
+        doctor_id: appointment.doctor_id._id,
+        slot_date: slotDate,
+        start_time: slotTime,
+      },
+      {
+        status: "available",
+        appointment_id: null,
+        is_emergency: false,
+      },
+      { 
+        returnDocument: "after", 
+        session,
+        upsert: false 
+      }
+    );
+    
+    if (timeslotUpdate) {
+      console.log("✅ Timeslot updated to available");
+    } else {
+      console.log("⚠️ No timeslot found to update (may not exist)");
+    }
+
+    // Step 7: Commit transaction
+    await session.commitTransaction();
+    session.endSession();
+    console.log("✅ Transaction committed successfully");
+
+    // Step 8: Emit socket event
+    try {
+      emitAppointmentUpdate(appointment, "cancelled_by_doctor");
+      console.log("✅ Socket event emitted");
+    } catch (socketError) {
+      console.log("⚠️ Socket event failed:", socketError.message);
+      // Don't throw - appointment is already cancelled
+    }
+
+    // Step 9: Return populated appointment
+    const populatedAppointment = await Appointment.findById(appointment._id)
+      .populate("doctor_id")
+      .populate("patient_id");
+    
+    console.log("✅ cancelAppointmentByDoctor COMPLETED SUCCESSFULLY");
+    console.log("=" * 60);
+    
+    return populatedAppointment;
+    
+  } catch (error) {
+    console.log("❌ ERROR in cancelAppointmentByDoctor");
+    console.log(`   Error message: ${error.message}`);
+    console.log(`   Error stack: ${error.stack}`);
+    console.log("=" * 60);
+    
+    await session.abortTransaction();
+    session.endSession();
+    throw error;
+  }
+}
 
   static async deleteAppointment(id) {
     return await Appointment.findByIdAndDelete(id);

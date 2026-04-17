@@ -1,12 +1,12 @@
 import json
 from datetime import datetime
 from tools import AVAILABLE_FUNCTIONS
-from session_state import get_session, update_session
+from session_state import get_session, update_session, merge_session
 
 
 def _auth_required_response():
     return json.dumps({
-        "success": False,
+        "success": False,   
         "auth_required": True,
         "message": "Please login first to continue."
     })
@@ -23,10 +23,20 @@ async def run_workflow(tool_name, args, session_id):
         })
 
     role = state.get("role")
-    patient_id = state.get("patient_id")          # Patient collection _id
-    patient_user_id = state.get("user_id")        # User collection _id
+    patient_id = state.get("patient_id")
+    patient_user_id = state.get("user_id")
     doctor_user_id = state.get("user_id")
     token = state.get("token")
+
+    print("=" * 60)
+    print(f"WORKFLOW AUTH DEBUG:")
+    print(f"  Tool: {tool_name}")
+    print(f"  Role: {role}")
+    print(f"  patient_id: {patient_id}")
+    print(f"  patient_user_id: {patient_user_id}")
+    print(f"  doctor_user_id: {doctor_user_id}")
+    print(f"  token exists: {bool(token)}")
+    print("=" * 60)
 
     general_tools = {
         "analyze_booking_priority",
@@ -121,6 +131,7 @@ async def run_workflow(tool_name, args, session_id):
 
         return result
 
+    # PATIENT CANCELLATION FLOW
     if tool_name == "find_patient_cancellation_target":
         if not patient_user_id:
             return _auth_required_response()
@@ -136,13 +147,14 @@ async def run_workflow(tool_name, args, session_id):
         try:
             data = json.loads(result)
             if data.get("success") and data.get("data"):
+                print(f"Storing pending patient cancel target: {data.get('data').get('_id')}")
                 update_session(
                     session_id,
                     "pending_patient_cancel_target",
                     data.get("data")
                 )
-        except Exception:
-            pass
+        except Exception as e:
+            print(f"Error storing pending target: {e}")
 
         return result
 
@@ -154,6 +166,7 @@ async def run_workflow(tool_name, args, session_id):
         if not appointment_id:
             pending_target = state.get("pending_patient_cancel_target") or {}
             appointment_id = pending_target.get("_id")
+            print(f"cancel_existing_appointment: Using pending target appointment_id={appointment_id}")
 
         if not appointment_id:
             return json.dumps({
@@ -168,11 +181,13 @@ async def run_workflow(tool_name, args, session_id):
             if data.get("success"):
                 update_session(session_id, "last_appointment", None)
                 update_session(session_id, "pending_patient_cancel_target", None)
-        except Exception:
-            pass
+                print(f"Cancelled and cleared pending patient target")
+        except Exception as e:
+            print(f"Error clearing pending target: {e}")
 
         return result
 
+    # DOCTOR APPOINTMENT VIEWING FLOWS
     if tool_name in {"view_doctor_appointments", "get_next_patient", "get_urgent_queue"}:
         if not doctor_user_id:
             return _auth_required_response()
@@ -186,6 +201,7 @@ async def run_workflow(tool_name, args, session_id):
             token=token
         )
 
+    # DOCTOR CANCELLATION FLOW
     if tool_name == "find_doctor_cancellation_target":
         if not doctor_user_id:
             return _auth_required_response()
@@ -198,27 +214,36 @@ async def run_workflow(tool_name, args, session_id):
             token=token,
         )
 
+        # Store the pending target - DO NOT CLEAR IT
         try:
             data = json.loads(result)
             if data.get("success") and data.get("data"):
+                print(f"Storing pending doctor cancel target: {data.get('data').get('_id')}")
                 update_session(
                     session_id,
                     "pending_doctor_cancel_target",
                     data.get("data")
                 )
-        except Exception:
-            pass
+                # Verify it was stored
+                verify_state = get_session(session_id)
+                print(f"Verified pending target in session: {verify_state.get('pending_doctor_cancel_target') is not None}")
+        except Exception as e:
+            print(f"Error storing pending target: {e}")
 
         return result
 
     if tool_name == "cancel_doctor_appointment":
         if not doctor_user_id:
-            return _auth_required_response()
+            return json.dumps({
+                "success": False,
+                "message": "You must be logged in as a doctor to cancel appointments."
+            })
 
         appointment_id = args.get("appointment_id")
         if not appointment_id:
             pending_target = state.get("pending_doctor_cancel_target") or {}
             appointment_id = pending_target.get("_id")
+            print(f"cancel_doctor_appointment: Using pending target appointment_id={appointment_id}")
 
         if not appointment_id:
             return json.dumps({
@@ -226,26 +251,49 @@ async def run_workflow(tool_name, args, session_id):
                 "message": "I could not identify which appointment to cancel."
             })
 
-        if not args.get("reason"):
+        reason = args.get("reason")
+        if not reason or not reason.strip():
             return json.dumps({
                 "success": False,
-                "message": "Cancellation reason is required."
+                "message": "Please provide a cancellation reason."
             })
 
-        result = await tool(
-            appointment_id=appointment_id,
-            reason=args.get("reason"),
-            token=token,
-        )
-
+        print(f"   cancel_doctor_appointment: Cancelling appointment_id={appointment_id}")
+        print(f"   Reason: {reason}")
+        print(f"   Doctor User ID: {doctor_user_id}")
+        
         try:
-            data = json.loads(result)
-            if data.get("success"):
-                update_session(session_id, "pending_doctor_cancel_target", None)
-        except Exception:
-            pass
-
-        return result
+            result = await tool(
+                appointment_id=appointment_id,
+                reason=reason.strip(),
+                token=token,
+            )
+            print(f"cancel_doctor_appointment result: {result[:200] if result else 'None'}")
+            
+            # Parse and return the result
+            try:
+                data = json.loads(result)
+                if data.get("success"):
+                    # Clear the pending target
+                    update_session(session_id, "pending_doctor_cancel_target", None)
+                    print(f"   Successfully cancelled and cleared pending target")
+                else:
+                    print(f"   Cancellation failed: {data.get('message')}")
+                return result
+            except json.JSONDecodeError as e:
+                print(f"   JSON parse error: {e}")
+                return json.dumps({
+                    "success": False,
+                    "message": f"Invalid response from server"
+                })
+        except Exception as e:
+            print(f"Exception in cancel_doctor_appointment: {e}")
+            import traceback
+            traceback.print_exc()
+            return json.dumps({
+                "success": False,
+                "message": f"Error cancelling appointment: {str(e)}"
+            })
 
     return json.dumps({
         "success": False,

@@ -17,7 +17,8 @@ SESSION_DEFAULT = {
     "last_reason": None,
     "last_resolved_date": None,
     "last_specialization": None,
-    "pending_doctor_cancel_target": None,
+    "pending_doctor_cancel_target": None,  # This should persist
+    "pending_patient_cancel_target": None,  # This should persist
 }
 
 SESSION_STATE = {}
@@ -30,11 +31,13 @@ def _new_state():
 def create_session():
     session_id = str(uuid.uuid4())
     SESSION_STATE[session_id] = _new_state()
+    print(f"Created session: {session_id}")
     return session_id
 
 
 def get_session(session_id):
     if session_id not in SESSION_STATE:
+        print(f"Session {session_id} not found, creating new")
         SESSION_STATE[session_id] = _new_state()
     return SESSION_STATE[session_id]
 
@@ -43,14 +46,17 @@ def update_session(session_id, key, value):
     if session_id not in SESSION_STATE:
         SESSION_STATE[session_id] = _new_state()
     SESSION_STATE[session_id][key] = value
+    print(f"Updated session {session_id}: {key} = {value}")
 
 
 def merge_session(session_id, payload: dict):
     if session_id not in SESSION_STATE:
         SESSION_STATE[session_id] = _new_state()
     SESSION_STATE[session_id].update(payload)
+    print(f"Merged session {session_id}: {payload}")
 
 
 def clear_session(session_id):
     if session_id in SESSION_STATE:
         del SESSION_STATE[session_id]
+        print(f"Cleared session: {session_id}")

@@ -10,7 +10,7 @@ const timeslotSchema = new mongoose.Schema(
     },
 
     slot_date: {
-      type: Date,
+      type: String,
       required: true
     },
 
@@ -21,14 +21,7 @@ const timeslotSchema = new mongoose.Schema(
 
     end_time: {
       type: String,
-      required: false,
-      default: ""
-    },
-
-    is_availability: {
-      type: Boolean,
       required: true,
-      default: true
     },
 
     is_emergency: {

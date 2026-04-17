@@ -87,7 +87,7 @@ function Signup() {
                                 className="input md:col-span-2"
                                 onChange={handleChange}
                                 value={formData.email}
-                                required
+                                required   
                             />
 
                             <input

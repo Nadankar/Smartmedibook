@@ -23,3 +23,5 @@ __pycache__/
 
 # virtual env
 venv/
+
+frontend/public/animated_video.mp4

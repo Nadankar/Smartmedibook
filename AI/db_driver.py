@@ -10,7 +10,9 @@ class DatabaseDriver:
         self.base_url = BACKEND_API_URL
 
     def _headers(self, token: Optional[str] = None) -> Dict[str, str]:
-        headers: Dict[str, str] = {}
+        headers: Dict[str, str] = {
+            "Content-Type": "application/json"
+        }
         if token:
             headers["Authorization"] = f"Bearer {token}"
         return headers
@@ -39,15 +41,19 @@ class DatabaseDriver:
         patient_user_id: str,
         token: str | None = None,
     ) -> Optional[Dict[str, Any]]:
+        print(f"📋 get_patient_appointments called with patient_user_id={patient_user_id}")
+        
         async with httpx.AsyncClient(timeout=15.0) as client:
             try:
                 response = await client.get(
                     f"{self.base_url}/appointments/patient/{patient_user_id}",
                     headers=self._headers(token),
                 )
+                print(f"📞 Response status: {response.status_code}")
                 return response.json()
             except Exception as e:
-                return {"success": False, "message": str(e)}
+                print(f"❌ Exception: {e}")
+                return {"success": False, "message": str(e), "data": []}
 
     async def list_doctors(
         self,
@@ -240,13 +246,62 @@ class DatabaseDriver:
         reason: str,
         token: str | None = None,
     ) -> Optional[Dict[str, Any]]:
+        print(f"   cancel_doctor_appointment called:")
+        print(f"   appointment_id={appointment_id}")
+        print(f"   reason={reason}")
+        print(f"   token exists={bool(token)}")
+        
+        if not appointment_id:
+            return {"success": False, "message": "Appointment ID is required"}
+        
+        if not reason or not reason.strip():
+            return {"success": False, "message": "Cancellation reason is required"}
+        
         async with httpx.AsyncClient(timeout=15.0) as client:
             try:
+                url = f"{self.base_url}/appointments/{appointment_id}/doctor-cancel"
+                headers = self._headers(token)
+                payload = {"reason": reason.strip()}
+                
+                print(f"PUT {url}")
+                print(f"payload={payload}")
+                print(f"headers={headers}")
+                
                 response = await client.put(
-                    f"{self.base_url}/appointments/{appointment_id}/doctor-cancel",
-                    json={"reason": reason},
-                    headers=self._headers(token),
+                    url,
+                    json=payload,
+                    headers=headers,
                 )
-                return response.json()
+                
+                print(f"Response status: {response.status_code}")
+                print(f"Response body: {response.text[:500]}")
+                
+                if response.status_code == 200:
+                    return response.json()
+                elif response.status_code == 404:
+                    # Fallback to patient cancellation endpoint
+                    print("Doctor cancel endpoint not found, trying patient cancel endpoint")
+                    fallback_response = await client.patch(
+                        f"{self.base_url}/appointments/{appointment_id}/cancel",
+                        headers=headers,
+                    )
+                    if fallback_response.status_code == 200:
+                        result = fallback_response.json()
+                        if result.get("success"):
+                            result["message"] = f"Appointment cancelled. Reason: {reason}"
+                        return result
+                    return {"success": False, "message": "Doctor cancel endpoint not available"}
+                else:
+                    try:
+                        return response.json()
+                    except:
+                        return {"success": False, "message": f"Server returned status {response.status_code}"}
+                        
+            except httpx.TimeoutException:
+                print(f"Timeout error")
+                return {"success": False, "message": "Request timed out. Please try again."}
             except Exception as e:
-                return {"success": False, "message": str(e)}
+                print(f"Exception in cancel_doctor_appointment: {e}")
+                import traceback
+                traceback.print_exc()
+                return {"success": False, "message": str(e)}     
