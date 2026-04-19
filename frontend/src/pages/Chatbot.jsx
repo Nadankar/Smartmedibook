@@ -9,7 +9,7 @@ function Chatbot() {
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
   const [sessionId, setSessionId] = useState(
-    localStorage.getItem("ai_session_id") || ""
+    localStorage.getItem("ai_session_id") || "" 
   );
 
   //  Updated storedUser
@@ -78,6 +78,8 @@ function Chatbot() {
   const triggerDashboardRefresh = () => {
     window.dispatchEvent(new Event("appointments:refresh"));
   };
+
+  console.log("AI_URL:", AI_URL);
 
   //  UPDATED sendMessage (new logic)
   const sendMessage = async () => {
