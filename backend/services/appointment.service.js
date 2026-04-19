@@ -360,7 +360,7 @@ class AppointmentService {
     
     const doctor = await Doctor.findOne({ user_id: doctorUserId });
     if (!doctor) {
-      console.log(`❌ Doctor not found for user_id: ${doctorUserId}`);
+      console.log(` Doctor not found for user_id: ${doctorUserId}`);
       return [];
     }
     
@@ -778,7 +778,7 @@ class AppointmentService {
     // Step 2: Find the appointment
     console.log("📞 Looking for appointment with ID:", appointmentId);
     
-    // Validate appointment ID format
+    // Validate appointment ID format 
     if (!mongoose.Types.ObjectId.isValid(appointmentId)) {
       console.log("❌ Invalid appointment ID format");
       throw new Error("Invalid appointment ID format");

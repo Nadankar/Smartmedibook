@@ -17,7 +17,7 @@ app.add_middleware(
 
 class ChatRequest(BaseModel):
     message: str
-    session_id: str | None = None
+    session_id: str | None = None 
     user_id: str | None = None
     patient_id: str | None = None
     role: str | None = None
