@@ -1,26 +1,27 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 from typing import Optional
 import os
 
 from agent import process_message, SESSIONS
 
-app = FastAPI(
-    title="SmartMediBook AI Assistant",
-    description="AI-powered hospital booking system",
-    version="1.0.0"
-)
+app = FastAPI()
 
-# CORS - Configure based on environment
-ALLOWED_ORIGINS = os.getenv("ALLOWED_ORIGINS", "http://localhost:5173,http://localhost:3000").split(",")
+# Get allowed origins from environment variable
+ALLOWED_ORIGINS = os.getenv(
+    "ALLOWED_ORIGINS",
+    "https://smartmedbook.onrender.com,https://smartmedbook-backend.onrender.com,http://localhost:5173,http://localhost:3000"
+).split(",")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=ALLOWED_ORIGINS,  # Restrict in production
+    allow_origins=ALLOWED_ORIGINS,
     allow_credentials=True,
-    allow_methods=["*"],
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allow_headers=["*"],
+    expose_headers=["*"],
 )
 
 
@@ -39,28 +40,42 @@ class ChatResponse(BaseModel):
 
 
 @app.get("/")
-async def health():
+async def root():
     return {
         "status": "ok",
-        "service": "smartmedibook-ai",
-        "version": "1.0.0"
+        "service": "smartmedbook-ai",
+        "message": "AI server is running"
     }
 
 
 @app.get("/health")
-async def health_check():
-    """Detailed health check for monitoring"""
+async def health():
     return {
         "status": "healthy",
-        "service": "smartmedibook-ai",
-        "sessions_active": len(SESSIONS),
-        "version": "1.0.0"
+        "sessions_active": len(SESSIONS)
     }
+
+
+@app.options("/chat")
+async def options_chat():
+    """Handle CORS preflight requests"""
+    return JSONResponse(
+        content={"message": "OK"},
+        headers={
+            "Access-Control-Allow-Origin": "*",
+            "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+            "Access-Control-Allow-Headers": "*",
+        }
+    )
 
 
 @app.post("/chat", response_model=ChatResponse)
 async def chat(req: ChatRequest):
     try:
+        print(f"📨 Received message: {req.message[:50]}...")
+        print(f"📨 Session ID: {req.session_id}")
+        print(f"📨 Role: {req.role}")
+        
         # Validate message
         if not req.message or not req.message.strip():
             return ChatResponse(
@@ -78,12 +93,16 @@ async def chat(req: ChatRequest):
             token=req.token,
         )
         
+        print(f"📨 Response sent: {reply[:50]}...")
+        
         return ChatResponse(reply=reply, session_id=actual_session_id)
         
     except Exception as e:
-        print(f"Error in chat endpoint: {e}")
+        print(f"❌ Error in chat: {e}")
+        import traceback
+        traceback.print_exc()
         return ChatResponse(
-            reply="I'm sorry, I encountered an error. Please try again.",
+            reply=f"Sorry, I encountered an error: {str(e)[:100]}",
             session_id=req.session_id or ""
         )
 
@@ -96,12 +115,3 @@ async def reset(session_id: str):
         return {"status": "reset", "session_id": session_id, "message": "Session reset successfully"}
     else:
         return {"status": "not_found", "session_id": session_id, "message": "Session not found"}
-
-
-@app.get("/sessions")
-async def get_sessions():
-    """Debug endpoint - Get all active sessions (for monitoring)"""
-    return {
-        "total": len(SESSIONS),
-        "sessions": list(SESSIONS.keys())
-    }

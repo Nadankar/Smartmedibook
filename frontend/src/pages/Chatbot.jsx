@@ -5,6 +5,7 @@ import Navbar from "../components/Navbar";
 
 const AI_URL = import.meta.env.VITE_AI_URL || "http://localhost:8000";
 
+
 function Chatbot() {
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
