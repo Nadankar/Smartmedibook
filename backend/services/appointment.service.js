@@ -5,138 +5,19 @@ import Patient from "../models/patient.model.js";
 import TimeSlot from "../models/timeslot.model.js";
 import { getIo } from "../socket.js";
 
-const normalizeDate = (inputDate) => {
-  const [year, month, day] = String(inputDate).split("-").map(Number);
-  return new Date(Date.UTC(year, month - 1, day, 0, 0, 0, 0));
-};
 
-const guessEndTime = (start) => {
-  if (!start || !start.includes(":")) return "";
-  const [h, m] = start.split(":").map(Number);
-  const end = new Date();
-  end.setHours(h, m + 30, 0, 0);
-  const hh = String(end.getHours()).padStart(2, "0");
-  const mm = String(end.getMinutes()).padStart(2, "0");
-  return `${hh}:${mm}`;
-};
+import {
+  normalizeDate,
+  getIndiaNow,
+  buildAppointmentDateTime,
+} from "../utils/date.utils.js";
 
-const getDateOnlyUTC = (dateValue) => {
-  const d = new Date(dateValue);
-  return d.toISOString().slice(0, 10);
-};
+import {
+  resolveDoctorForBooking,
+} from "../utils/doctor.utils.js";
 
-const getIndiaNow = () => {
-  const now = new Date();
-  const indiaString = now.toLocaleString("en-US", { timeZone: "Asia/Kolkata" });
-  return new Date(indiaString);
-};
+import emitAppointmentUpdate from "../utils/socket.utils.js";
 
-const isTodayOrTomorrow = (inputDate) => {
-  const target = getDateOnlyUTC(normalizeDate(inputDate));
-
-  const indiaNow = getIndiaNow();
-  const year = indiaNow.getFullYear();
-  const month = String(indiaNow.getMonth() + 1).padStart(2, "0");
-  const day = String(indiaNow.getDate()).padStart(2, "0");
-
-  const today = `${year}-${month}-${day}`;
-
-  const tomorrowDate = new Date(indiaNow);
-  tomorrowDate.setDate(tomorrowDate.getDate() + 1);
-  const tomorrow = `${tomorrowDate.getFullYear()}-${String(
-    tomorrowDate.getMonth() + 1
-  ).padStart(2, "0")}-${String(tomorrowDate.getDate()).padStart(2, "0")}`;
-
-  return target === today || target === tomorrow;
-};
-
-const isOverrideEligibleExistingUrgency = (urgency) => {
-  return ["routine", "followup"].includes((urgency || "").toLowerCase());
-};
-
-const buildAppointmentDateTime = (appointment) => {
-  const datePart = getDateOnlyUTC(appointment?.date);
-  const timePart = appointment?.time || "00:00";
-  return new Date(`${datePart}T${timePart}:00`);
-};
-
-const normalizeDoctorText = (value = "") =>
-  String(value)
-    .toLowerCase()
-    .replace(/\bdr\.?\b/g, "")
-    .replace(/[^a-z0-9\s]/g, " ")
-    .replace(/\s+/g, " ")
-    .trim();
-
-const getDoctorTokens = (value = "") =>
-  normalizeDoctorText(value).split(" ").filter(Boolean);
-
-const resolveDoctorForBooking = async ({ session, doctorId, doctorName }) => {
-  if (doctorId) {
-    return Doctor.findOne({ _id: doctorId, isActive: true }).session(session);
-  }
-
-  const rawName = String(doctorName || "").trim();
-  if (!rawName) return null;
-
-  const normalizedInput = normalizeDoctorText(rawName);
-  const inputTokens = getDoctorTokens(rawName);
-
-  const activeDoctors = await Doctor.find({ isActive: true }).session(session);
-  if (!activeDoctors.length) return null;
-
-  const scoredDoctors = activeDoctors
-    .map((doctor) => {
-      const normalizedDoctorName = normalizeDoctorText(doctor.name);
-      const doctorTokens = getDoctorTokens(doctor.name);
-
-      let score = 0;
-
-      if (normalizedDoctorName === normalizedInput) score += 100;
-      if (normalizedDoctorName.startsWith(normalizedInput)) score += 60;
-      if (normalizedDoctorName.includes(normalizedInput)) score += 40;
-
-      for (const token of inputTokens) {
-        if (doctorTokens.includes(token)) score += 25;
-        else if (normalizedDoctorName.includes(token)) score += 10;
-      }
-
-      return { doctor, score, normalizedDoctorName };
-    })
-    .filter((item) => item.score > 0)
-    .sort(
-      (a, b) =>
-        b.score - a.score ||
-        a.normalizedDoctorName.localeCompare(b.normalizedDoctorName)
-    );
-
-  return scoredDoctors[0]?.doctor || null;
-};
-
-const emitAppointmentUpdate = (appointment, type = "updated", extra = {}) => {
-  const io = getIo();
-
-  const eventName =
-    type === "created" || type === "overridden_and_created"
-      ? "appointment:new"
-      : "appointment:updated";
-
-  const payload = {
-    type,
-    appointment,
-    ...extra,
-  };
-
-  if (appointment.doctor_id?.user_id) {
-    io.to(`user:${appointment.doctor_id.user_id}`).emit(eventName, payload);
-    io.to(`doctor:${appointment.doctor_id.user_id}`).emit(eventName, payload);
-  }
-
-  if (appointment.patient_id?.user_id) {
-    io.to(`user:${appointment.patient_id.user_id}`).emit(eventName, payload);
-    io.to(`patient:${appointment.patient_id.user_id}`).emit(eventName, payload);
-  }
-};
 
 class AppointmentService {
   static async createAppointment(appointmentData) {
@@ -355,6 +236,8 @@ class AppointmentService {
       .populate("patient_id");
   }
 
+
+  
   static async getAppointmentsByDoctorUserId(doctorUserId) {
     
     const doctor = await Doctor.findOne({ user_id: doctorUserId });
@@ -362,8 +245,6 @@ class AppointmentService {
       console.log(` Doctor not found for user_id: ${doctorUserId}`);
       return [];
     }
-    
-    
 
     const appointments = await Appointment.find({
       doctor_id: doctor._id,
@@ -374,6 +255,8 @@ class AppointmentService {
     
     return appointments;
   }
+
+
 
   static async getAppointmentsByPatientUserId(patientUserId) {
     
@@ -388,9 +271,7 @@ class AppointmentService {
     if (!patient) {
       return [];
     }
-    
   
-
     const appointments = await Appointment.find({
       patient_id: patient._id,
       status: { $nin: ["rescheduled_required"] },
@@ -405,6 +286,7 @@ class AppointmentService {
     
     return appointments;
   }
+
 
   static async getNextPatientByDoctorUserId(doctorUserId) {
     const doctor = await Doctor.findOne({ user_id: doctorUserId });
@@ -430,6 +312,8 @@ class AppointmentService {
     return upcomingAppointments[0] || null;
   }
 
+
+
   static async getUrgentQueueByDoctorUserId(doctorUserId) {
     const doctor = await Doctor.findOne({ user_id: doctorUserId });
     if (!doctor) return [];
@@ -453,6 +337,10 @@ class AppointmentService {
     });
   }
 
+
+
+
+
   static async findPatientCancellationTarget(patientUserId, filters = {}) {
     
     
@@ -460,7 +348,6 @@ class AppointmentService {
     let patient = await Patient.findOne({ user_id: patientUserId });
     
     if (!patient && mongoose.Types.ObjectId.isValid(patientUserId)) {
-      console.log(`   Trying to find patient by _id: ${patientUserId}`);
       patient = await Patient.findById(patientUserId);
     }
     
@@ -533,6 +420,9 @@ class AppointmentService {
     };
   }
 
+
+
+
   static async findDoctorCancellationTarget(doctorUserId, filters = {}) {
     
     const doctor = await Doctor.findOne({ user_id: doctorUserId });
@@ -602,6 +492,10 @@ class AppointmentService {
     };
   }
 
+
+
+
+
   static async updateAppointment(id, updateData) {
     const appointment = await Appointment.findByIdAndUpdate(id, updateData, {
       returnDocument: "after",
@@ -614,6 +508,10 @@ class AppointmentService {
     emitAppointmentUpdate(appointment, "updated");
     return appointment;
   }
+
+
+
+
 
   static async cancelAppointment(id) {
     const session = await mongoose.startSession();
@@ -667,6 +565,11 @@ class AppointmentService {
     }
   }
 
+
+
+
+
+
   static async markCompletedByDoctor(appointmentId, doctorUserId) {
     const doctor = await Doctor.findOne({ user_id: doctorUserId });
     if (!doctor) throw new Error("Doctor not found.");
@@ -700,6 +603,11 @@ class AppointmentService {
     emitAppointmentUpdate(appointment, "completed");
     return appointment;
   }
+
+
+
+
+
 
   static async cancelAppointmentByDoctor(appointmentId, doctorUserId, reason) {
 
